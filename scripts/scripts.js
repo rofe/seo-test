@@ -662,6 +662,10 @@ export function decorateMain(main) {
  */
 async function loadEager(doc) {
   decorateTemplateAndTheme();
+  if (doc.body.classList.contains('seo')) {
+    console.log('seo page');
+    await import('/scripts/seo.js');
+  }
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
