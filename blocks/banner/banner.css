@@ -1,0 +1,25 @@
+.banner-wrapper {
+  border: solid 5px red;
+  margin: 0;
+}
+
+.banner-wrapper > * {
+  height: 100px;
+  margin: 0;
+}
+
+#default-banner {
+  background-color: lightblue;
+}
+
+#market-1-january-banner {
+  background-color: lightgreen;
+}
+
+#market-1-special-banner {
+  background-color: lightyellow;
+  color: magenta;
+}
+#market-2-january-banner {
+  background-color: lightcoral;
+}
