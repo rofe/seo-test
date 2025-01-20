@@ -30,7 +30,7 @@ function globToRegExp(glob) {
  * @returns {Date} The Date object
  */
 function sheetToDate(date) {
-  // number case, coming from Excel
+  // date coming from Excel/GSheet
   // 1/1/1900 is day 1 in Excel, so:
   // - add this
   // - add days between 1/1/1900 and 1/1/1970
@@ -71,21 +71,21 @@ async function getScheduledBanners(scheduleJson) {
 }
 
 /**
- * Loads a fragment.
- * @param {string} path The path to the fragment
- * @returns {HTMLElement} The root element of the fragment
+ * Loads a banner.
+ * @param {string} url The path to the banner
+ * @returns {HTMLElement} The root element of the banner
  */
-export async function loadFragment(path) {
-  if (path && path.startsWith('/')) {
-    const resp = await fetch(`${path}.plain.html`);
+export async function loadBanner(url) {
+  if (url && (url.startsWith('/') || url.startsWith('https://'))) {
+    const resp = await fetch(`${url}.plain.html`);
     if (resp.ok) {
       const main = document.createElement('main');
       main.innerHTML = await resp.text();
 
-      // reset base path for media to fragment base
+      // reset base path for media to banner base
       const resetAttributeBase = (tag, attr) => {
         main.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((elem) => {
-          elem[attr] = new URL(elem.getAttribute(attr), new URL(path, window.location)).href;
+          elem[attr] = new URL(elem.getAttribute(attr), new URL(url, window.location)).href;
         });
       };
       resetAttributeBase('img', 'src');
@@ -107,7 +107,7 @@ export default async function decorate(block) {
   }
 
   const banners = await getScheduledBanners(path);
-  const banner = await loadFragment(banners[0]);
+  const banner = await loadBanner(banners[0]);
   if (banner) {
     const bannerSection = banner.querySelector(':scope .section');
     if (bannerSection) {
