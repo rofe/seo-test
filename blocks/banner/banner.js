@@ -48,7 +48,7 @@ async function getScheduledBanners(scheduleJson) {
   let json = resp.ok ? await resp.json() : null;
   if (!json) {
     // fall back to global banner schedule
-    resp = await fetch('/banner-schedule.json');
+    resp = await fetch('/banners/schedule.json');
     json = resp.ok ? await resp.json() : null;
   }
   if (!json) {
