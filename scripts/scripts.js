@@ -43,6 +43,20 @@ function buildBannerBlock(main) {
 }
 
 /**
+ * Builds martech-include blocks from include metadata.
+ * @param {Element} main The container element
+ */
+function buildIncludeBlocks(main) {
+  const include = getMetadata('include');
+  let section = [...main.querySelectorAll(':scope > div')].at(-1);
+  if (!section) {
+    section = document.createElement('div');
+    main.append(section);
+  }
+  section.append(buildBlock('martech-include', include));
+}
+
+/**
  * load fonts.css and set a session storage flag
  */
 async function loadFonts() {
@@ -62,6 +76,7 @@ function buildAutoBlocks(main) {
   try {
     buildHeroBlock(main);
     buildBannerBlock(main);
+    buildIncludeBlocks(main);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Auto Blocking failed', error);
