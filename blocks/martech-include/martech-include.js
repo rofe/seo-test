@@ -35,12 +35,65 @@ function getInlineScript(value) {
 }
 
 /**
+ * Decodes URI-encoded text.
+ * @param {string} value The value to decode
+ * @returns {string} Decoded value, or original on decode failure
+ */
+function decodeValue(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch (error) {
+    return value;
+  }
+}
+
+/**
+ * Determines if a string contains HTML markup.
+ * @param {string} value The string to check
+ * @returns {boolean} Whether the string contains HTML
+ */
+function isHTML(value) {
+  return /<[^>]+>/.test(value);
+}
+
+/**
+ * Normalizes smart quotes in markup so attribute values parse correctly.
+ * @param {string} value The HTML string
+ * @returns {string} HTML with ASCII quotes
+ */
+function normalizeHTMLMarkup(value) {
+  return value
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+}
+
+/**
+ * Builds a fragment from HTML and re-creates script tags so they execute.
+ * @param {string} value The HTML string
+ * @returns {DocumentFragment} A DOM fragment for insertion
+ */
+function buildHTMLFragment(value) {
+  const template = document.createElement('template');
+  template.innerHTML = normalizeHTMLMarkup(value);
+  template.content.querySelectorAll('script').forEach((script) => {
+    const runtimeScript = document.createElement('script');
+    [...script.attributes].forEach((attribute) => {
+      runtimeScript.setAttribute(attribute.name, attribute.value);
+    });
+    runtimeScript.textContent = script.textContent;
+    script.replaceWith(runtimeScript);
+  });
+  return template.content;
+}
+
+/**
  * decorate the block
  * @param {Element} block the block
  */
 export default async function decorate(block) {
-  const anchor = block.querySelector('a');
-  const value = anchor ? anchor.getAttribute('href') : block.textContent.trim();
+  const cell = block.querySelector(':scope > div > div') || block;
+  const anchor = cell.querySelector('a');
+  const value = anchor ? anchor.getAttribute('href') : decodeValue(cell.innerText.trim());
   if (!value) return;
 
   let el;
@@ -68,14 +121,16 @@ export default async function decorate(block) {
       // eslint-disable-next-line no-console
       console.error('Invalid inline script in martech-include block:', inlineScript, error);
     }
+  } else if (isHTML(value)) {
+    el = buildHTMLFragment(value);
   }
 
   if (el) {
     try {
-      block.replaceChildren(el);
+      block.replaceWith(el);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(`failed to replace children for ${block.id}`, error);
+      console.log(`failed to replace block for ${block.id}`, error);
     }
   }
 }
